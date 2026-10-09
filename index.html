@@ -1,0 +1,1165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Ecotero Asset Securement</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b6b6b'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one quiet top bar, a single centred column, summary before detail. Colour is reserved for status. */
+:root{
+  --page:#f5f7f7; --surface:#ffffff; --surface-2:#f1f4f4;
+  --ink:#0f1717; --ink-2:#465353; --muted:#6b7878; --line:#e2e7e7; --line-2:#cbd3d3;
+  --accent:#0b6b6b; --accent-ink:#ffffff; --accent-soft:#e1f0ef;
+  --good:#0ca30c; --warn:#fab219; --info:#2a78d6; --crit:#d03b3b; --crit-ink:#b42a2a; --hold:#4a3aa7; --none:#8a9596; --na:#cdd4d4;
+  --scrim:rgba(8,14,14,.42); --shadow:0 16px 48px rgba(15,23,23,.16);
+  --font-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#0c1011; --surface:#141a1b; --surface-2:#1a2122;
+    --ink:#eef3f3; --ink-2:#b9c4c4; --muted:#8b9797; --line:#232c2d; --line-2:#313c3d;
+    --accent:#5cc8c2; --accent-ink:#062221; --accent-soft:#16302f;
+    --good:#0ca30c; --warn:#fab219; --info:#3987e5; --crit:#d03b3b; --crit-ink:#f08a8a; --hold:#9085e9; --none:#6f7b7c; --na:#3a4546;
+    --scrim:rgba(0,0,0,.6); --shadow:0 16px 48px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#0c1011; --surface:#141a1b; --surface-2:#1a2122;
+  --ink:#eef3f3; --ink-2:#b9c4c4; --muted:#8b9797; --line:#232c2d; --line-2:#313c3d;
+  --accent:#5cc8c2; --accent-ink:#062221; --accent-soft:#16302f;
+  --good:#0ca30c; --warn:#fab219; --info:#3987e5; --crit:#d03b3b; --crit-ink:#f08a8a; --hold:#9085e9; --none:#6f7b7c; --na:#3a4546;
+  --scrim:rgba(0,0,0,.6); --shadow:0 16px 48px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page);color:var(--ink);font:14px/1.5 var(--font-body);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.bar{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.bar-in{max-width:1200px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);display:flex;align-items:center;gap:0 28px;min-height:56px}
+.mark{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+.mark b{font:600 20px/1 var(--font-display);letter-spacing:-.01em}
+.mark span{font-size:12px;color:var(--muted)}
+.nav{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav button{border:0;background:none;padding:18px 12px 16px;color:var(--ink-2);font-weight:500;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.nav button:hover{color:var(--ink)}
+.nav button[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
+.nav button:focus-visible{outline-offset:-3px}
+.side{display:flex;align-items:center;gap:6px 14px;white-space:nowrap}
+.sync{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--none);flex:none}
+.sync[data-s="live"] i{background:var(--good)}
+.sync[data-s="busy"] i{background:var(--info)}
+.sync[data-s="off"] i{background:var(--crit)}
+.lnk{font-size:13px;font-weight:500;text-decoration:none}
+.lnk:hover{text-decoration:underline}
+
+.page{max-width:1200px;margin:0 auto;padding-block:32px 80px;padding-inline:clamp(16px,4vw,40px);display:flex;flex-direction:column;gap:20px}
+.view{display:flex;flex-direction:column;gap:24px;min-width:0}
+.vh{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px 24px}
+.vh h1{margin:0;font:600 24px/1.2 var(--font-body);letter-spacing:-.015em;text-wrap:balance}
+.vh p{margin:4px 0 0;color:var(--ink-2);max-width:62ch}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-width:0}
+.row.between{justify-content:space-between}
+.banner{padding:10px 14px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 13px;border:1px solid var(--line-2);border-radius:7px;background:var(--surface);color:var(--ink);font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.danger{color:var(--crit-ink)}
+.btn.quiet{border-color:transparent;background:transparent;color:var(--ink-2)}
+.btn.quiet:hover{background:var(--surface-2);color:var(--ink)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn:disabled{opacity:.55;cursor:default}
+input[type=text],input[type=search],input[type=date],input[type=password],input[type=url],select,textarea{padding:7px 10px;border:1px solid var(--line-2);border-radius:7px;background:var(--surface);color:var(--ink);min-width:0;max-width:100%}
+textarea{resize:vertical;min-height:72px;width:100%;line-height:1.45}
+input:disabled,select:disabled,textarea:disabled{background:var(--surface-2);color:var(--ink-2);opacity:1}
+
+.lead{display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,1.7fr);gap:24px 40px;align-items:end;padding-bottom:28px;border-bottom:1px solid var(--line)}
+.fig{font:600 60px/1 var(--font-body);letter-spacing:-.03em}
+.fig small{font-size:22px;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:8px}
+.lead .lbl{margin:8px 0 14px;color:var(--ink-2)}
+.meter{height:8px;border-radius:4px;background:var(--accent-soft);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:0 4px 4px 0}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px 0}
+.stat{padding-left:20px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat .v{font:600 26px/1.2 var(--font-body);letter-spacing:-.01em}
+.stat .k{font-size:13px;color:var(--ink)}
+.stat .s{font-size:12px;color:var(--muted)}
+
+.cols{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:24px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.card-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:8px 12px}
+.card h2{margin:0;font:600 15px/1.3 var(--font-body)}
+.card .sub{margin:2px 0 0;font-size:12px;color:var(--muted);max-width:60ch}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:7px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:5px 11px;font-size:12px;font-weight:500;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.seg button+button{border-left:1px solid var(--line-2)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink)}
+.seg button:focus-visible{outline-offset:-2px}
+.seg .n{font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-left:5px}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend b{font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
+.g{flex:none;display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--none)}
+.g-good{background:var(--good)}
+.g-warn{background:transparent;box-shadow:inset 0 0 0 3px var(--warn)}
+.g-info{background:linear-gradient(90deg,var(--info) 50%,transparent 50%);box-shadow:inset 0 0 0 1.5px var(--info)}
+.g-crit{border-radius:2px;background:var(--crit);transform:rotate(45deg) scale(.8)}
+.g-hold{border-radius:2px;background:var(--hold)}
+.g-none{background:transparent;box-shadow:inset 0 0 0 1.5px var(--none)}
+.g-na{border-radius:1px;height:2px;background:var(--none)}
+.s-good{background:var(--good)} .s-warn{background:var(--warn)} .s-info{background:var(--info)} .s-crit{background:var(--crit)}
+.s-hold{background:var(--hold)} .s-none{background:var(--none)} .s-na{background:var(--na)}
+
+.bars{display:grid;grid-template-columns:minmax(84px,max-content) minmax(0,1fr) max-content;gap:10px 14px;align-items:center}
+.bars .name{border:0;background:none;padding:0;text-align:left;cursor:pointer;color:var(--ink);font-weight:500}
+.bars .name:hover{text-decoration:underline}
+.track{display:flex;height:14px;min-width:0}
+.stack{display:flex;gap:2px;height:100%;min-width:4px;border-radius:0 4px 4px 0;overflow:hidden}
+.stack span{min-width:3px;height:100%}
+.stack span:focus-visible{outline-offset:-2px;outline-color:var(--ink)}
+.num{font:400 12px var(--font-mono);color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bars .num{text-align:right}
+.checks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 32px}
+.check{display:flex;flex-direction:column;gap:6px;min-width:0}
+.check div:first-child{display:flex;justify-content:space-between;gap:12px;font-size:13px}
+
+.list{display:flex;flex-direction:column}
+.li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:2px 12px;padding:11px 0;border-top:1px solid var(--line);align-items:baseline}
+.li:first-child{border-top:0;padding-top:0}
+.li:last-child{padding-bottom:0}
+.li .g{align-self:center}
+.li .t{font-weight:500;overflow-wrap:anywhere;border:0;background:none;padding:0;text-align:left;color:var(--ink)}
+.li button.t{cursor:pointer}
+.li button.t:hover{text-decoration:underline}
+.li .m{grid-column:2;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border:1px solid var(--line-2);border-radius:999px;background:var(--surface);font-size:12px;font-weight:500;color:var(--ink);white-space:nowrap}
+.tag{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 4px 3px 10px;border-radius:999px;background:var(--accent-soft);font-size:12px;font-weight:500}
+.chip button{border:0;background:none;cursor:pointer;padding:0 6px;font-size:14px;line-height:1;color:var(--ink-2)}
+
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:500;font-size:12px;color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl th button{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center}
+.tbl th button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tbl th .arr{font:400 11px var(--font-mono);color:var(--accent);min-width:8px}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tbody tr:last-child td{border-bottom:0}
+.tbl tbody tr.click{cursor:pointer}
+.tbl tbody tr.click:hover{background:var(--surface-2)}
+.tbl td.id{font:500 12px/1.7 var(--font-mono);white-space:nowrap}
+.tbl td.id button{all:unset;cursor:pointer;color:var(--accent)}
+.tbl td.id button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tbl td.wrap{min-width:220px;max-width:520px;overflow-wrap:anywhere}
+.tbl td.pre{white-space:pre-line}
+.tbl td.nw{white-space:nowrap}
+.tbl td.r,.tbl th.r{text-align:right;font-variant-numeric:tabular-nums}
+.tbl .sub2{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.ticks{display:inline-flex;gap:2px;vertical-align:middle;margin-left:8px}
+.ticks i{width:4px;height:10px;border-radius:1px;background:var(--line-2)}
+.ticks i.on{background:var(--accent)}
+.count{font-size:12px;color:var(--muted)}
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:8px;font-size:12px;color:var(--ink-2)}
+.filters input[type=search]{flex:1 1 200px}
+.filters select{flex:0 1 168px;max-width:168px}
+.empty{padding:36px 20px;text-align:center;color:var(--ink-2);border:1px dashed var(--line-2);border-radius:12px;background:var(--surface)}
+.empty b{display:block;color:var(--ink);font-weight:600;font-size:15px;margin-bottom:4px}
+
+.kv{display:grid;grid-template-columns:minmax(0,1fr) max-content max-content;gap:9px 18px;align-items:baseline;font-size:13px}
+.kv .d{font:400 12px var(--font-mono);color:var(--muted);text-align:right;white-space:nowrap}
+.kv .d.up,.kv .d.down{color:var(--ink)}
+.upd{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 24px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.upd h3{margin:0;font:600 15px/1.3 var(--font-body)}
+.upd .body{white-space:pre-line;overflow-wrap:anywhere;color:var(--ink);max-width:78ch}
+.upd .body b{display:block;margin:18px 0 4px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.upd .body b:first-child{margin-top:0}
+svg.trend{display:block;width:100%;height:auto}
+svg.trend text{font:11px var(--font-mono);fill:var(--muted)}
+svg.trend .grid{stroke:var(--line);stroke-width:1}
+svg.trend .ln{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+svg.trend .ar{fill:var(--accent);opacity:.1}
+svg.trend .pt{fill:var(--accent);stroke:var(--surface);stroke-width:2}
+svg.trend .hit{fill:transparent}
+
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(620px,100%);background:var(--surface);border-left:1px solid var(--line);z-index:41;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:var(--shadow)}
+.drawer>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 24px;border-bottom:1px solid var(--line)}
+.drawer>header h2{margin:2px 0 0;font:600 18px/1.25 var(--font-body);letter-spacing:-.01em;overflow-wrap:anywhere}
+.drawer .body{flex:1;overflow-y:auto;padding:18px 24px 28px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;align-content:start}
+.drawer .body .w{grid-column:1/-1}
+.drawer .body h3{grid-column:1/-1;margin:10px 0 0;padding-top:16px;border-top:1px solid var(--line);font:600 11px/1.4 var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.drawer .body h3.first{border-top:0;padding-top:0;margin-top:0}
+.fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fld label{font-size:12px;font-weight:500;color:var(--ink-2)}
+.fld .hint,.hint{font-size:12px;color:var(--muted)}
+.fld input,.fld select{width:100%}
+.drawer>footer{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px 24px;border-top:1px solid var(--line)}
+.sp{flex:1}
+.err{grid-column:1/-1;padding:10px 12px;border:1px solid var(--crit);border-radius:7px;background:var(--surface-2);color:var(--ink);font-size:13px}
+.err ul{margin:0;padding-left:18px}
+.gatebox{grid-column:1/-1;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--surface-2);display:flex;flex-direction:column;gap:10px}
+.gatebox .gh{display:flex;justify-content:space-between;gap:12px;font-weight:500}
+.gatebox ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 16px;font-size:13px}
+.gatebox li{display:flex;gap:8px;align-items:baseline;color:var(--ink-2)}
+.gatebox li.ok{color:var(--ink)}
+.gatebox li .mk{font:500 11px var(--font-mono);width:36px;flex:none;color:var(--muted)}
+.gatebox li.ok .mk{color:var(--ink)}
+.setting{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
+.setting p{margin:0;color:var(--ink-2);font-size:13px}
+.setting code{font:12px var(--font-mono);overflow-wrap:anywhere;color:var(--ink)}
+.onoff{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:6px 0;border-top:1px solid var(--line)}
+.onoff:first-of-type{border-top:0}
+
+.connect{max-width:520px;margin:6vh auto 0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:32px;display:flex;flex-direction:column;gap:16px}
+.connect h1{margin:0;font:600 22px/1.2 var(--font-body);letter-spacing:-.015em}
+.connect p{margin:0;color:var(--ink-2)}
+.connect form{display:flex;flex-direction:column;gap:12px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 14px;border-radius:8px;font-weight:500;z-index:60;max-width:min(520px,calc(100% - 32px))}
+.tip{position:fixed;z-index:70;pointer-events:none;background:var(--ink);color:var(--surface);padding:6px 9px;border-radius:6px;font-size:12px;max-width:260px}
+
+@media (max-width:860px){
+  .bar-in{flex-wrap:wrap;gap:0 16px;padding-top:10px}
+  .side{margin-left:auto}
+  .nav{order:3;flex-basis:100%;margin-inline:-12px}
+  .nav button{padding:12px 12px 10px}
+  .side{gap:6px 10px}
+  .lead,.cols{grid-template-columns:minmax(0,1fr)}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .checks{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .page{padding-block:24px 64px}
+}
+@media (max-width:560px){
+  .drawer .body,.gatebox ul,.checks{grid-template-columns:minmax(0,1fr)}
+  .fig{font-size:48px}
+  .mark span,.sync span{display:none}
+  .card,.upd{padding:18px}
+  .connect{padding:22px}
+}
+</style>
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="mark"><b>Ecotero</b><span>Asset securement</span></div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="side">
+    <span class="sync" id="sync"><i></i><span>Not connected</span></span>
+    <a class="lnk" id="sheet-link" target="_blank" rel="noopener" hidden>Open sheet</a>
+    <button class="btn quiet sm" id="btn-settings" type="button" hidden>Settings</button>
+  </div>
+</div></header>
+<main class="page">
+  <div class="banner" id="banner" role="status" hidden></div>
+  <section class="view" id="v-connect" hidden></section>
+  <section class="view" id="v-overview" hidden></section>
+  <section class="view" id="v-assets" hidden></section>
+  <section class="view" id="v-plan" hidden></section>
+  <section class="view" id="v-weekly" hidden></section>
+  <section class="view" id="v-records" hidden></section>
+</main>
+<div class="tip" id="tip" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script src="config.js"></script>
+<script>
+(() => {
+'use strict';
+
+/* ---------- helpers ---------- */
+const $ = (s, r) => (r || document).querySelector(s);
+function h(tag, attrs, ...kids){
+  const el = document.createElement(tag);
+  if (attrs) for (const k in attrs){
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k === 'hidden') el.hidden = !!v;
+    else if (k.slice(0, 2) === 'on' && typeof v === 'function') el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  kids.flat(Infinity).forEach(kid => {
+    if (kid == null || kid === false || kid === '') return;
+    el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  });
+  return el;
+}
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const today = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); })();
+const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const parseD = s => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || '')); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
+const fmtD = s => { const d = parseD(s); return d ? d.getDate() + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear() : String(s || ''); };
+const daysTo = s => { const d = parseD(s); return d ? Math.round((d - today) / 86400000) : null; };
+const rel = n => n === null ? '' : n === 0 ? 'today' : n === 1 ? 'tomorrow' : n === -1 ? 'yesterday' : n > 0 ? 'in ' + n + ' days' : Math.abs(n) + ' days ago';
+const txt = v => v == null ? '' : String(v).trim();
+const eq = (v, s) => txt(v).toLowerCase() === s;
+const byId = (a, b) => a.id.localeCompare(b.id, undefined, {numeric: true});
+const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
+
+/* ---------- vocabulary (matched to the sheet's own column names and dropdown values) ---------- */
+const H = {id: 'Asset ID', brand: 'Brand', category: 'Category', platform: 'Platform / Asset', target: 'Target Name (Unverified)', actual: 'Actual Handle / Account ID', url: 'Verified Asset URL', priority: 'Priority', status: 'Status', owner: 'Action Owner', ownerStatus: 'Owner Status', next: 'Next Action', targetDate: 'Target Date', blocker: 'Blocker / Decision', entity: 'Owning Entity', container: 'Business Container / ID', admin1: 'Primary Admin', admin2: 'Backup Admin', access: 'Company Access', recovery: 'Recovery Control', twoFA: '2FA', vault: 'Vault Reference', evidence: 'Evidence Link', lastVerified: 'Last Verified', renewal: 'Renewal / Deadline', autoRenew: 'Auto Renew', notes: 'Historical Notes / Source'};
+const VERIFIED = 'Secured - verified', DEFAULT_STATUS = 'Needs verification';
+const SG = [
+  {key: 'good', label: 'Verified', of: ['Secured - verified']},
+  {key: 'warn', label: 'Reported, audit pending', of: ['Reported secured - audit pending']},
+  {key: 'info', label: 'In progress', of: ['In progress']},
+  {key: 'crit', label: 'Blocked or third-party held', of: ['Blocked', 'Third-party held - review']},
+  {key: 'hold', label: 'Awaiting approval', of: ['Available - approval needed']},
+  {key: 'none', label: 'Needs verification', of: ['Needs verification']},
+  {key: 'na', label: 'Not applicable', of: ['Not applicable']}
+];
+const G_GOOD = 0, G_WARN = 1, G_INFO = 2, G_CRIT = 3, G_HOLD = 4, G_NONE = 5, G_NA = 6;
+const SKEY = {}; SG.forEach((g, i) => g.of.forEach(s => { SKEY[s] = i; }));
+const FALLBACK = {};
+FALLBACK[H.status] = ['Needs verification', 'Reported secured - audit pending', 'In progress', 'Secured - verified', 'Available - approval needed', 'Third-party held - review', 'Blocked', 'Not applicable'];
+FALLBACK[H.priority] = ['Critical', 'High', 'Medium', 'Low'];
+FALLBACK[H.access] = FALLBACK[H.recovery] = FALLBACK[H.twoFA] = ['Unknown', 'Verified', 'Action required', 'Not applicable'];
+FALLBACK[H.autoRenew] = ['Unknown', 'On', 'Off', 'Not applicable'];
+FALLBACK[H.ownerStatus] = ['Proposed', 'Accepted'];
+const LONG = [H.next, H.blocker, H.notes];
+const SUGGEST = [H.brand, H.category, H.platform, H.owner, H.entity, H.admin1, H.admin2];
+const FORM_GROUPS = [
+  ['Identity', [H.brand, H.category, H.platform, H.priority, H.target, H.actual, H.url]],
+  ['Status and next step', [H.status, H.targetDate, H.owner, H.ownerStatus, H.next, H.blocker]],
+  ['Ownership and access', [H.entity, H.container, H.admin1, H.admin2, H.access, H.recovery, H.twoFA]],
+  ['Evidence and renewal', [H.vault, H.evidence, H.lastVerified, H.renewal, H.autoRenew, H.notes]]
+];
+const HINTS = {}; HINTS[H.vault] = 'Reference only. Never enter a password, recovery code or key.';
+const TONE = {Agreed: 'good', Accepted: 'good', Confirmed: 'good', Done: 'good', Decided: 'good', Mitigated: 'good', Closed: 'good', Sent: 'good', Yes: 'good', 'In progress': 'info', Blocked: 'crit', Slipped: 'crit'};
+const PRI = {Critical: 0, High: 1, Medium: 2, Low: 3};
+const VIEWS = {overview: 'Overview', assets: 'Assets', plan: 'Plan', weekly: 'Weekly', records: 'Records'};
+const PAGE = 50;
+
+const S = {
+  milestones: {one: 'milestone', prefix: 'M', title: r => r.title, fields: [
+    {k: 'title', l: 'Milestone', t: 'text', req: 1, w: 1}, {k: 'date', l: 'Date', t: 'date'},
+    {k: 'state', l: 'State', t: 'select', o: ['Proposed', 'Agreed', 'Done', 'Slipped'], d: 'Proposed'},
+    {k: 'gate', l: 'Deliverable / gate', t: 'area'}, {k: 'note', l: 'Note', t: 'area'}]},
+  actions: {one: 'action', prefix: 'P', title: r => r.action, fields: [
+    {k: 'action', l: 'Action', t: 'area', req: 1}, {k: 'owner', l: 'Owner', t: 'combo'},
+    {k: 'ownerState', l: 'Owner status', t: 'select', o: ['Proposed', 'Accepted'], d: 'Proposed'},
+    {k: 'status', l: 'Status', t: 'select', o: ['Not started', 'In progress', 'Blocked', 'Done'], d: 'Not started'},
+    {k: 'due', l: 'Due', t: 'date'}, {k: 'dependency', l: 'Depends on', t: 'text', w: 1},
+    {k: 'acceptance', l: 'Evidence / acceptance', t: 'area'}, {k: 'note', l: 'Note', t: 'area'}]},
+  evidence: {one: 'evidence entry', prefix: 'K', title: r => r.type ? r.type.charAt(0).toUpperCase() + r.type.slice(1) : 'Evidence entry', fields: [
+    {k: 'claim', l: 'Claim', t: 'area', req: 1},
+    {k: 'type', l: 'Type', t: 'combo', req: 1, sug: ['user decision', 'sponsor direction', 'current account evidence', 'team report', 'source observation', 'historical note', 'proposal']},
+    {k: 'supersedes', l: 'Supersedes', t: 'text', hint: 'ID of the entry this replaces, if any.'},
+    {k: 'eventDate', l: 'Event date', t: 'date'}, {k: 'observedDate', l: 'Observed date', t: 'date'},
+    {k: 'source', l: 'Source', t: 'area', hint: 'Link or description. Redact secrets before saving.'}, {k: 'state', l: 'State', t: 'area'}]},
+  decisions: {one: 'item', prefix: 'D', title: r => r.title, fields: [
+    {k: 'kind', l: 'Kind', t: 'select', o: ['Decision', 'Risk'], d: 'Decision'},
+    {k: 'status', l: 'Status', t: 'select', o: ['Open', 'Decided', 'Mitigated', 'Closed'], d: 'Open'},
+    {k: 'title', l: 'Title', t: 'text', req: 1, w: 1}, {k: 'detail', l: 'Detail / treatment', t: 'area'},
+    {k: 'owner', l: 'Owner', t: 'combo'}, {k: 'decidedOn', l: 'Decided on', t: 'date'}, {k: 'outcome', l: 'Outcome', t: 'area'}]},
+  team: {one: 'person', prefix: 'T', title: r => r.name, fields: [
+    {k: 'name', l: 'Name', t: 'text', req: 1}, {k: 'role', l: 'Role or workstream', t: 'text'},
+    {k: 'state', l: 'Role status', t: 'select', o: ['Confirmed', 'Proposed', 'Unconfirmed'], d: 'Proposed'},
+    {k: 'inChannel', l: 'In project channel', t: 'select', o: ['Yes', 'No', 'Unknown'], d: 'Unknown'}, {k: 'note', l: 'Note', t: 'area'}]},
+  updates: {one: 'weekly update', prefix: 'W', title: r => 'Update as of ' + fmtD(r.date), fields: [
+    {k: 'date', l: 'As of', t: 'date', req: 1}, {k: 'sent', l: 'State', t: 'select', o: ['Draft', 'Sent'], d: 'Draft'},
+    {k: 'summary', l: 'Summary', t: 'area', req: 1, rows: 7}, {k: 'changes', l: 'Changes this week', t: 'area', rows: 4},
+    {k: 'blockers', l: 'Blockers and renewals', t: 'area'}, {k: 'nextWeek', l: 'Next week', t: 'area'},
+    {k: 'forecast', l: 'Milestone forecast', t: 'text', w: 1}, {k: 'decisionsNeeded', l: 'Decisions needed', t: 'area'}]}
+};
+const LISTS = {
+  milestones: {c: 'milestones', label: 'Milestones', add: 'Add milestone', emptyT: 'No milestones yet', emptyD: 'Add the first milestone to start tracking the forecast.', byDate: 'date',
+    cols: [{k: 'id', l: 'ID', t: 'id'}, {k: 'date', l: 'Date', t: 'date'}, {k: 'title', l: 'Milestone', t: 'wrap', sub: 'note'}, {k: 'state', l: 'State', t: 'pill'}, {k: 'gate', l: 'Deliverable / gate', t: 'wrap'}]},
+  actions: {c: 'actions', label: 'Actions', add: 'Add action', emptyT: 'No actions yet', emptyD: 'Add the first action for the team.',
+    cols: [{k: 'id', l: 'ID', t: 'id'}, {k: 'action', l: 'Action', t: 'wrap', sub: 'acceptance'}, {k: 'owner', l: 'Owner', t: 'text', sub: 'ownerState'}, {k: 'status', l: 'Status', t: 'pill'}, {k: 'dependency', l: 'Depends on', t: 'text'}, {k: 'due', l: 'Due', t: 'date'}]},
+  decisions: {c: 'decisions', label: 'Decisions', add: 'Add decision', preset: {kind: 'Decision'}, prefix: 'D', only: r => r.kind !== 'Risk', emptyT: 'No decisions logged', emptyD: 'Add a decision that needs an owner.',
+    cols: [{k: 'id', l: 'ID', t: 'id'}, {k: 'title', l: 'Decision', t: 'wrap', sub: 'detail'}, {k: 'owner', l: 'Owner', t: 'text'}, {k: 'status', l: 'Status', t: 'pill'}, {k: 'decidedOn', l: 'Decided', t: 'date'}]},
+  risks: {c: 'decisions', label: 'Risks', add: 'Add risk', preset: {kind: 'Risk'}, prefix: 'R', only: r => r.kind === 'Risk', emptyT: 'No risks logged', emptyD: 'Add a risk and how it is being treated.',
+    cols: [{k: 'id', l: 'ID', t: 'id'}, {k: 'title', l: 'Risk', t: 'wrap', sub: 'detail'}, {k: 'owner', l: 'Owner', t: 'text'}, {k: 'status', l: 'Status', t: 'pill'}]},
+  evidence: {c: 'evidence', label: 'Evidence', add: 'Add evidence', newest: true, emptyT: 'No evidence logged yet', emptyD: 'Add a dated claim with its source.',
+    cols: [{k: 'id', l: 'ID', t: 'id'}, {k: 'claim', l: 'Claim', t: 'wrap', sub: 'state'}, {k: 'type', l: 'Type', t: 'text'}, {k: 'eventDate', l: 'Event', t: 'date'}, {k: 'observedDate', l: 'Observed', t: 'date'}]},
+  team: {c: 'team', label: 'Team', add: 'Add person', emptyT: 'No one listed yet', emptyD: 'Add the sponsor, the lead and each asset custodian.',
+    cols: [{k: 'id', l: 'ID', t: 'id'}, {k: 'name', l: 'Name', t: 'text'}, {k: 'role', l: 'Role', t: 'wrap', sub: 'note'}, {k: 'state', l: 'Role status', t: 'pill'}, {k: 'inChannel', l: 'In project channel', t: 'pill'}]}
+};
+
+/* ---------- configuration ---------- */
+const forced = new URLSearchParams(location.search).get('theme');
+if (forced === 'dark' || forced === 'light') document.documentElement.setAttribute('data-theme', forced);
+const STORE = 'ecotero.dashboard';
+const LOCKED_API = txt(window.DASHBOARD_API);
+let cfg = {};
+try { cfg = JSON.parse(localStorage.getItem(STORE) || '{}') || {}; } catch (e){ cfg = {}; }
+function saveCfg(){ try { localStorage.setItem(STORE, JSON.stringify(cfg)); } catch (e){} }
+const okApi = u => /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(u);
+let startView = '';
+(() => {
+  const raw = (location.hash || '').slice(1);
+  if (raw.indexOf('=') < 0){ startView = raw; return; }
+  const p = new URLSearchParams(raw), api = txt(p.get('api'));
+  if (!LOCKED_API && api && okApi(api) && api !== cfg.api){ cfg.api = api; cfg.key = ''; }
+  if (p.get('key')) cfg.key = p.get('key');
+  startView = txt(p.get('view'));
+  saveCfg();
+  try { history.replaceState(null, '', location.pathname + location.search + (startView ? '#' + startView : '')); } catch (e){}
+})();
+if (LOCKED_API) cfg.api = LOCKED_API;
+
+/* ---------- state ---------- */
+const state = {
+  loaded: false, rev: '', headers: [], options: {}, dateCols: [], assets: [], noId: 0, dups: [], log: {}, snapshots: [], changes: [], urls: {}, triggers: {},
+  view: 'overview', group: 'brand', chartTable: false, planTab: 'milestones', recTab: 'evidence',
+  reg: {q: '', brand: '', category: '', status: '', owner: '', flag: '', sort: 'id', dir: 1, page: 0},
+  filt: {}, syncing: false, syncErr: '', lastSync: 0, busy: 0
+};
+let drawer = null;
+const R = c => state.log[c] || [];
+const connected = () => !!(cfg.api && cfg.key);
+const stOf = a => txt(a[H.status]) || DEFAULT_STATUS;
+const sgi = a => SKEY[stOf(a)] === undefined ? G_NONE : SKEY[stOf(a)];
+const opts = hd => state.options[hd] || FALLBACK[hd] || null;
+const hasCol = hd => state.headers.indexOf(hd) >= 0;
+
+/* ---------- the evidence gate ---------- */
+function gate(a){
+  const has = k => !!txt(a[k]);
+  const okNA = k => eq(a[k], 'verified') || eq(a[k], 'not applicable');
+  const renews = /domain/i.test(txt(a[H.category])) || has(H.renewal);
+  const items = [
+    {label: 'Asset identity', pass: has(H.actual) && has(H.url)},
+    {label: 'Company ownership', pass: has(H.entity)},
+    {label: 'Working company access', pass: eq(a[H.access], 'verified')},
+    {label: 'Recovery control', pass: okNA(H.recovery)},
+    {label: '2FA', pass: okNA(H.twoFA)},
+    {label: 'Primary and backup admin', pass: has(H.admin1) && has(H.admin2)},
+    {label: 'Vault reference', pass: has(H.vault)},
+    {label: 'Evidence link and date', pass: has(H.evidence) && has(H.lastVerified)},
+    {label: 'Renewal settings', pass: !renews || (has(H.renewal) && ['on', 'off', 'not applicable'].indexOf(txt(a[H.autoRenew]).toLowerCase()) >= 0), na: !renews}
+  ];
+  const live = items.filter(x => !x.na);
+  return {items, pass: live.filter(x => x.pass).length, total: live.length};
+}
+
+/* ---------- derived numbers ---------- */
+function stats(A){
+  const g = SG.map(() => 0), brands = {};
+  let named = 0, accepted = 0, blocked = 0, evid = 0;
+  A.forEach(a => {
+    const i = sgi(a); g[i]++;
+    if (i === G_NA) return;
+    brands[txt(a[H.brand]) || '(none)'] = 1;
+    if (txt(a[H.owner])){ named++; if (eq(a[H.ownerStatus], 'accepted')) accepted++; }
+    if (txt(a[H.blocker])) blocked++;
+    if (txt(a[H.evidence])) evid++;
+  });
+  return {g, total: A.length, na: g[G_NA], applicable: A.length - g[G_NA], verified: g[G_GOOD], named, accepted, blocked, evid, brands: Object.keys(brands).length};
+}
+function groupBy(A, hd){
+  const order = [], map = {};
+  A.forEach(a => {
+    const k = txt(a[hd]) || '(none)';
+    if (!map[k]){ map[k] = {name: k, total: 0, g: SG.map(() => 0)}; order.push(k); }
+    map[k].total++; map[k].g[sgi(a)]++;
+  });
+  return order.map(k => map[k]);
+}
+function renewals(A){
+  const out = [];
+  A.forEach(a => {
+    if (sgi(a) === G_NA) return;
+    let d = parseD(a[H.renewal]) ? txt(a[H.renewal]).slice(0, 10) : null, conf = true;
+    if (!d){ const m = /renewal date (\d{4}-\d{2}-\d{2})/i.exec(a[H.notes] || ''); if (m){ d = m[1]; conf = false; } }
+    if (d) out.push({a, d, conf, n: daysTo(d)});
+  });
+  return out.sort((x, y) => x.d < y.d ? -1 : x.d > y.d ? 1 : 0);
+}
+const assetName = a => txt(a[H.actual]) || txt(a[H.target]) || txt(a[H.platform]) || a.id;
+const nextMilestone = () => R('milestones').filter(m => m.state !== 'Done').sort((a, b) => txt(a.date) < txt(b.date) ? -1 : txt(a.date) > txt(b.date) ? 1 : byId(a, b))[0];
+const openDecisions = () => R('decisions').filter(d => d.kind !== 'Risk' && d.status === 'Open');
+const gateOpen = a => { if (stOf(a) !== VERIFIED) return false; const g = gate(a); return g.pass < g.total; };
+
+/* ---------- talking to the tracker ---------- */
+async function call(action, payload){
+  let res, j;
+  try { res = await fetch(cfg.api, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(Object.assign({key: cfg.key || '', action}, payload || {}))}); }
+  catch (e){ throw {code: 'network', message: 'The tracker could not be reached. Check your connection.'}; }
+  try { j = await res.json(); }
+  catch (e){ throw {code: 'bad_response', message: 'The web app did not answer as expected. Check the web app URL and that access is set to Anyone.'}; }
+  if (!j || !j.ok) throw {code: (j && j.error) || 'error', message: (j && j.message) || 'The tracker refused that request.', fields: j && j.fields};
+  return j;
+}
+function ingest(j){
+  const reg = j.register || {headers: [], rows: []}, hs = reg.headers || [], assets = [], seen = {}, dup = {};
+  let noId = 0;
+  (reg.rows || []).forEach(row => {
+    const a = {};
+    hs.forEach((hd, i) => { if (hd) a[hd] = row[i] == null ? '' : String(row[i]); });
+    const id = txt(a[H.id]);
+    if (!id){ noId++; return; }
+    if (seen[id]){ dup[id] = 1; return; }
+    seen[id] = 1; a.id = id; assets.push(a);
+  });
+  assets.sort(byId);
+  Object.assign(state, {loaded: true, rev: j.rev, headers: hs.filter(Boolean), options: reg.options || {}, dateCols: reg.dateCols || [], assets, noId, dups: Object.keys(dup),
+    log: j.log || {}, snapshots: j.snapshots || [], changes: j.changes || [], urls: {tracker: txt(reg.url), log: txt(j.logUrl)}, triggers: j.triggers || {}});
+}
+let syncP = null;
+function sync(force){
+  if (!connected()) return Promise.resolve();
+  if (syncP) return force ? syncP.then(() => sync(true)) : syncP;
+  syncP = pull(force).finally(() => { syncP = null; });
+  return syncP;
+}
+async function pull(force){
+  state.syncing = true; chrome();
+  try {
+    const j = await call('read');
+    state.syncErr = ''; state.lastSync = Date.now();
+    if (force || j.rev !== state.rev || !state.loaded){ ingest(j); render(); }
+  } catch (e){
+    state.syncErr = e.code;
+    if (e.code === 'unauthorized' || e.code === 'not_set_up'){ cfg.key = ''; saveCfg(); showConnect(e.message); }
+  }
+  state.syncing = false; chrome();
+}
+async function write(action, payload){
+  state.busy++; chrome();
+  try { return await call(action, payload); }
+  finally { state.busy--; chrome(); }
+}
+
+/* ---------- small UI ---------- */
+let toastT = 0;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 4200); }
+function showTip(el){
+  const tip = $('#tip'); tip.textContent = el.getAttribute('data-tip'); tip.hidden = false;
+  const r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+  const x = Math.max(8, Math.min(r.left + r.width / 2 - tw / 2, window.innerWidth - tw - 8));
+  let y = r.top - th - 8; if (y < 8) y = r.bottom + 8;
+  tip.style.left = x + 'px'; tip.style.top = y + 'px';
+}
+const hideTip = () => { $('#tip').hidden = true; };
+const empty = (title, body) => h('div', {class: 'empty'}, h('b', null, title), body);
+const pill = (label, key) => h('span', {class: 'pill'}, h('i', {class: 'g g-' + key}), label);
+const stPill = a => pill(stOf(a), SG[sgi(a)].key);
+const gPill = v => v ? pill(v, TONE[v] || 'none') : '';
+function meter(frac){ const i = h('i'); i.style.width = Math.max(0, Math.min(1, frac || 0)) * 100 + '%'; return h('div', {class: 'meter'}, i); }
+function card(title, sub, right){ return h('section', {class: 'card'}, h('div', {class: 'card-head'}, h('div', null, h('h2', null, title), sub ? h('p', {class: 'sub'}, sub) : null), right || null)); }
+function head(title, desc, actions){ return h('div', {class: 'vh'}, h('div', null, h('h1', null, title), desc ? h('p', null, desc) : null), actions ? h('div', {class: 'row'}, actions) : null); }
+function seg(items, current, pick, label){
+  return h('div', {class: 'seg', role: 'group', 'aria-label': label}, items.map(it => h('button', {type: 'button', 'aria-pressed': String(it[0] === current), onclick: () => pick(it[0])}, it[1], it[2] == null ? null : h('span', {class: 'n'}, String(it[2])))));
+}
+function copyText(text, done){
+  const fallback = () => {
+    const ta = h('textarea', {rows: 8, readonly: true, 'aria-label': 'Text to copy'}); ta.value = text;
+    const box = h('div', {class: 'banner'}, 'Copying is blocked in this browser. Select the text below and copy it.', ta, h('div', {class: 'row'}, h('button', {class: 'btn sm', type: 'button', onclick: () => box.remove()}, 'Done')));
+    $('.page').prepend(box); ta.focus(); ta.select();
+  };
+  try { navigator.clipboard.writeText(text).then(() => toast(done), fallback); } catch (e){ fallback(); }
+}
+
+/* ---------- shell ---------- */
+function buildShell(){
+  const nav = $('#nav');
+  Object.keys(VIEWS).forEach(k => nav.append(h('button', {type: 'button', 'data-view': k, onclick: () => go(k)}, VIEWS[k])));
+  $('#btn-settings').addEventListener('click', openSettings);
+  buildAssets();
+}
+function go(v){
+  if (!VIEWS[v]) v = 'overview';
+  state.view = v;
+  $('#v-connect').hidden = true;
+  Object.keys(VIEWS).forEach(k => { $('#v-' + k).hidden = k !== v; });
+  document.querySelectorAll('#nav button').forEach(b => { if (b.getAttribute('data-view') === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  try { history.replaceState(null, '', '#' + v); } catch (e){}
+  render();
+  try { window.scrollTo(0, 0); } catch (e){}
+}
+let raf = 0;
+const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; render(); }); };
+function render(){
+  hideTip(); chrome();
+  if (!connected()) return;
+  ({overview: renderOverview, assets: renderAssets, plan: renderPlan, weekly: renderWeekly, records: renderRecords})[state.view]();
+}
+function chrome(){
+  const s = $('#sync'), on = connected();
+  let label = 'Not connected', mode = '';
+  if (on && state.busy){ label = 'Saving to the sheet'; mode = 'busy'; }
+  else if (on && state.syncErr && !state.syncing){ label = state.loaded ? 'Offline, showing last sync' : 'Cannot reach the tracker'; mode = 'off'; }
+  else if (on && !state.loaded){ label = 'Connecting'; mode = 'busy'; }
+  else if (on){ const d = new Date(state.lastSync); label = 'Live with the sheet, ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); mode = 'live'; }
+  s.setAttribute('data-s', mode); s.lastChild.textContent = label;
+  const link = $('#sheet-link');
+  link.hidden = !/^https:\/\/docs\.google\.com\//.test(state.urls.tracker || '');
+  if (!link.hidden) link.href = state.urls.tracker;
+  $('#btn-settings').hidden = !on;
+  $('#nav').hidden = !on;
+  const b = $('#banner');
+  let msg = '';
+  if (on && state.syncErr && state.loaded) msg = 'The tracker cannot be reached right now. You are seeing the last synced data, and changes will not save until the connection returns.';
+  else if (on && state.syncErr && !state.syncing) msg = 'The tracker cannot be reached. Check your connection, then reload.';
+  b.hidden = !msg; b.textContent = msg;
+}
+
+/* ---------- connect ---------- */
+function showConnect(message){
+  const root = $('#v-connect');
+  Object.keys(VIEWS).forEach(k => { $('#v-' + k).hidden = true; });
+  root.hidden = false;
+  const err = h('div', {class: 'err', role: 'alert', hidden: !message}, message || '');
+  const url = h('input', {type: 'url', id: 'c-url', placeholder: 'https://script.google.com/macros/s/.../exec', autocomplete: 'off', value: cfg.api || ''});
+  const key = h('input', {type: 'password', id: 'c-key', autocomplete: 'off'});
+  const btn = h('button', {class: 'btn primary', type: 'submit'}, 'Connect');
+  const form = h('form', {novalidate: true, onsubmit: async e => {
+    e.preventDefault();
+    const api = LOCKED_API || txt(url.value), k = txt(key.value);
+    if (!okApi(api)){ err.textContent = 'Enter the web app URL from the Apps Script deployment. It starts with https://script.google.com/macros/s/ and ends with /exec.'; err.hidden = false; return; }
+    if (!k){ err.textContent = 'Enter the access key.'; err.hidden = false; return; }
+    btn.disabled = true; btn.textContent = 'Connecting';
+    cfg.api = api; cfg.key = k;
+    try { const j = await call('read'); saveCfg(); state.syncErr = ''; state.lastSync = Date.now(); ingest(j); go(VIEWS[startView] ? startView : 'overview'); }
+    catch (ex){ cfg.key = ''; err.textContent = ex.message; err.hidden = false; btn.disabled = false; btn.textContent = 'Connect'; chrome(); }
+  }},
+    LOCKED_API ? null : h('div', {class: 'fld'}, h('label', {for: 'c-url'}, 'Web app URL'), url),
+    h('div', {class: 'fld'}, h('label', {for: 'c-key'}, 'Access key'), key, h('div', {class: 'hint'}, 'Kept in this browser only. Ask the project lead if you do not have it.')),
+    err, h('div', {class: 'row'}, btn));
+  root.replaceChildren(h('div', {class: 'connect'},
+    h('h1', null, 'Connect to the tracker'),
+    h('p', null, 'This page holds no project data. It reads and writes the asset tracker in Google Sheets once you enter the team access key.'),
+    form));
+  chrome();
+  (LOCKED_API || cfg.api ? key : url).focus();
+}
+
+/* ---------- overview ---------- */
+function filterAssets(patch){
+  const f = state.reg;
+  Object.assign(f, {q: '', brand: '', category: '', status: '', owner: '', flag: '', page: 0}, patch);
+  const q = $('#reg-q'); if (q) q.value = '';
+  go('assets');
+}
+function renderOverview(){
+  const root = $('#v-overview'), A = state.assets;
+  root.replaceChildren(head('Overview', 'Where every brand asset stands against the evidence gate.'));
+  if (!state.loaded){ root.append(empty('Loading the tracker', 'Asset status, owners, renewals and milestones will appear here.')); return; }
+  if (!A.length){ root.append(empty('The register is empty', 'Add the first asset in Assets, or add rows to the sheet.')); return; }
+  const st = stats(A), stat = (v, k, s) => h('div', {class: 'stat'}, h('span', {class: 'v'}, String(v)), h('span', {class: 'k'}, k), h('span', {class: 's'}, s));
+  root.append(h('div', {class: 'lead'},
+    h('div', null,
+      h('div', {class: 'fig'}, String(st.verified), h('small', null, 'of ' + st.applicable)),
+      h('p', {class: 'lbl'}, 'applicable assets secured and verified'),
+      meter(st.applicable ? st.verified / st.applicable : 0)),
+    h('div', {class: 'stats'},
+      stat(st.g[G_WARN] + st.g[G_INFO], 'Reported or in progress', 'awaiting audit evidence'),
+      stat(st.g[G_NONE], 'Needs verification', 'no current audit'),
+      hasCol(H.ownerStatus) ? stat(st.accepted, 'Owners accepted', st.named + ' named so far') : stat(st.named, 'Owners named', (st.applicable - st.named) + ' unassigned'),
+      stat(st.g[G_CRIT] + st.g[G_HOLD], 'Blocked or on hold', plural(st.blocked, 'row carries', 'rows carry') + ' a blocker'))));
+  root.append(h('div', {class: 'cols'}, statusCard(A), attentionCard(A)));
+  root.append(gateCard(A));
+}
+function statusCard(A){
+  const key = state.group, hd = key === 'category' ? H.category : H.brand, groups = groupBy(A, hd);
+  let max = 1; groups.forEach(g => { if (g.total > max) max = g.total; });
+  const ctl = h('div', {class: 'row'},
+    seg([['brand', 'Brand'], ['category', 'Category']], key, v => { state.group = v; render(); }, 'Group by'),
+    h('button', {class: 'btn sm quiet', type: 'button', onclick: () => { state.chartTable = !state.chartTable; render(); }}, state.chartTable ? 'Show chart' : 'Show table'));
+  const c = card('Status by ' + key, 'Bar length is the number of assets. The figure on the right is verified out of applicable.', ctl);
+  const tot = SG.map(() => 0); A.forEach(a => { tot[sgi(a)]++; });
+  const shown = SG.map((g, i) => i).filter(i => tot[i] > 0 || i === G_GOOD);
+  c.append(h('div', {class: 'legend'}, shown.map(i => h('span', null, h('i', {class: 'g g-' + SG[i].key}), SG[i].label + ' ', h('b', null, String(tot[i]))))));
+  if (state.chartTable){
+    const tb = h('tbody');
+    groups.forEach(g => {
+      const tr = h('tr', {class: 'click', onclick: () => filterAssets(key === 'category' ? {category: g.name} : {brand: g.name})}, h('td', null, g.name));
+      shown.forEach(i => tr.append(h('td', {class: 'r'}, String(g.g[i]))));
+      tr.append(h('td', {class: 'r'}, String(g.total))); tb.append(tr);
+    });
+    c.append(h('div', {class: 'tbl-wrap'}, h('table', {class: 'tbl'}, h('thead', null, h('tr', null, h('th', {scope: 'col'}, key === 'category' ? 'Category' : 'Brand'), shown.map(i => h('th', {scope: 'col', class: 'r'}, SG[i].label)), h('th', {scope: 'col', class: 'r'}, 'Total'))), tb)));
+    return c;
+  }
+  const bars = h('div', {class: 'bars'});
+  groups.forEach(g => {
+    const stack = h('div', {class: 'stack'}); stack.style.width = (g.total / max * 100) + '%';
+    SG.forEach((sg, i) => {
+      const n = g.g[i]; if (!n) return;
+      const part = h('span', {class: 's-' + sg.key, tabindex: 0, role: 'img', 'aria-label': g.name + ', ' + sg.label + ': ' + n + ' of ' + g.total, 'data-tip': g.name + ' · ' + sg.label + ': ' + n + ' of ' + g.total});
+      part.style.flex = n + ' 1 0px'; stack.append(part);
+    });
+    bars.append(h('button', {class: 'name', type: 'button', onclick: () => filterAssets(key === 'category' ? {category: g.name} : {brand: g.name})}, g.name), h('div', {class: 'track'}, stack), h('span', {class: 'num'}, g.g[G_GOOD] + ' / ' + (g.total - g.g[G_NA])));
+  });
+  c.append(bars);
+  return c;
+}
+function attentionCard(A){
+  const items = [], add = (tone, title, meta, act) => items.push({tone, title, meta, act});
+  const flagged = A.filter(gateOpen);
+  if (flagged.length) add('crit', plural(flagged.length, 'asset is', 'assets are') + ' marked verified with gate checks still open', 'Review before reporting them as secured.', () => filterAssets({flag: 'gate'}));
+  if (state.noId) add('crit', plural(state.noId, 'sheet row has', 'sheet rows have') + ' no Asset ID', 'Add an ID in the sheet so the row appears here.');
+  if (state.dups.length) add('crit', 'Duplicate Asset IDs in the sheet', state.dups.slice(0, 5).join(', '));
+  const ms = nextMilestone();
+  if (ms){ const n = daysTo(ms.date); add(n !== null && n < 0 ? 'crit' : 'info', ms.id + ' ' + txt(ms.title), [fmtD(ms.date), rel(n), txt(ms.state)].filter(Boolean).join(' · '), () => { state.planTab = 'milestones'; go('plan'); }); }
+  renewals(A).filter(x => x.n !== null && x.n <= 60).slice(0, 3).forEach(x => add(x.n < 0 ? 'crit' : 'warn', assetName(x.a) + ' renews ' + fmtD(x.d), rel(x.n) + ' · ' + (x.conf ? 'confirmed date' : 'historical date, reconfirm in the registrar'), () => openAsset(x.a.id)));
+  const od = openDecisions();
+  if (od.length) add('none', plural(od.length, 'decision is', 'decisions are') + ' waiting', od.slice(0, 2).map(d => txt(d.title)).join('; ') + (od.length > 2 ? '; and ' + (od.length - 2) + ' more' : ''), () => { state.planTab = 'decisions'; go('plan'); });
+  const held = A.filter(a => sgi(a) === G_CRIT).length;
+  if (held) add('crit', plural(held, 'asset is', 'assets are') + ' blocked or third-party held', 'Each needs a sponsor decision.', () => filterAssets({flag: 'held'}));
+  const unassigned = A.filter(a => sgi(a) !== G_NA && !txt(a[H.owner])).length;
+  if (unassigned) add('none', plural(unassigned, 'asset has', 'assets have') + ' no owner', 'Assign owners so next actions have someone accountable.', () => filterAssets({owner: '__none'}));
+  const c = card('Needs attention', '');
+  if (!items.length){ c.append(h('p', {class: 'sub'}, 'Nothing needs attention right now.')); return c; }
+  c.append(h('div', {class: 'list'}, items.slice(0, 8).map(it => h('div', {class: 'li'}, h('i', {class: 'g g-' + it.tone}),
+    it.act ? h('button', {class: 't', type: 'button', onclick: it.act}, it.title) : h('span', {class: 't'}, it.title),
+    it.meta ? h('span', {class: 'm'}, it.meta) : null))));
+  return c;
+}
+function gateCard(A){
+  const app = A.filter(a => sgi(a) !== G_NA), defs = gate({}).items.map(x => ({label: x.label, n: 0, na: 0}));
+  app.forEach(a => gate(a).items.forEach((x, i) => { if (x.na) defs[i].na++; else if (x.pass) defs[i].n++; }));
+  const c = card('Evidence gate', 'How many applicable assets pass each check. Every check that applies must pass before an asset counts as secured and verified.');
+  c.append(h('div', {class: 'checks'}, defs.map(d => { const den = app.length - d.na; return h('div', {class: 'check'}, h('div', null, h('span', null, d.label), h('span', {class: 'num'}, d.n + ' / ' + den)), meter(den ? d.n / den : 0)); })));
+  return c;
+}
+
+/* ---------- assets ---------- */
+const REG_COLS = [['id', 'ID'], ['brand', 'Brand'], ['asset', 'Asset'], ['status', 'Status'], ['owner', 'Owner'], ['gate', 'Gate'], ['target', 'Target date']];
+const SORTS = {
+  id: a => a.id, brand: a => txt(a[H.brand]), asset: a => txt(a[H.platform]), status: a => sgi(a) * 10 + (PRI[a[H.priority]] === undefined ? 9 : PRI[a[H.priority]]),
+  owner: a => txt(a[H.owner]) || '￿', gate: a => gate(a).pass, target: a => txt(a[H.targetDate]) || '￿'
+};
+const FLAGS = {gate: 'Verified with open gate checks', held: 'Blocked or third-party held'};
+function buildAssets(){
+  const root = $('#v-assets'), f = state.reg;
+  const sel = (key, label) => h('select', {id: 'reg-' + key, 'aria-label': label, onchange: e => { f[key] = e.target.value; f.page = 0; renderAssets(); }});
+  root.append(
+    h('div', {id: 'reg-head'}),
+    h('div', {class: 'row filters'},
+      h('input', {type: 'search', id: 'reg-q', placeholder: 'Search ID, brand, handle, owner or notes', 'aria-label': 'Search assets', oninput: e => { f.q = e.target.value; f.page = 0; renderAssets(); }}),
+      sel('brand', 'Brand'), sel('category', 'Category'), sel('status', 'Status'), sel('owner', 'Owner')),
+    h('div', {class: 'row between'}, h('div', {class: 'row', id: 'reg-meta'}), h('div', {class: 'row'}, h('button', {class: 'btn quiet sm', type: 'button', onclick: exportCsv}, 'Download CSV'))),
+    h('div', {id: 'reg-mount'}),
+    h('div', {class: 'pager', id: 'reg-pager'}));
+}
+function setOptions(sel, values, first, extra){
+  const sig = values.join('\u0001');
+  if (sel.getAttribute('data-sig') === sig) return;
+  sel.setAttribute('data-sig', sig);
+  const list = [h('option', {value: ''}, first)];
+  if (extra) list.push(extra);
+  values.forEach(v => list.push(h('option', {value: v}, v)));
+  sel.replaceChildren(...list);
+}
+const distinct = (A, hd) => { const m = {}; A.forEach(a => { const v = txt(a[hd]); if (v) m[v] = 1; }); return Object.keys(m).sort(); };
+function regRows(){
+  const f = state.reg, q = f.q.trim().toLowerCase(), keys = [H.brand, H.category, H.platform, H.target, H.actual, H.owner, H.next, H.blocker, H.notes, H.container];
+  const out = state.assets.filter(a => {
+    if (f.brand && txt(a[H.brand]) !== f.brand) return false;
+    if (f.category && txt(a[H.category]) !== f.category) return false;
+    if (f.status && stOf(a) !== f.status) return false;
+    if (f.owner === '__none'){ if (txt(a[H.owner]) || sgi(a) === G_NA) return false; } else if (f.owner && txt(a[H.owner]) !== f.owner) return false;
+    if (f.flag === 'gate' && !gateOpen(a)) return false;
+    if (f.flag === 'held' && sgi(a) !== G_CRIT) return false;
+    if (q && (a.id + ' ' + keys.map(k => txt(a[k])).join(' ')).toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+  const get = SORTS[f.sort] || SORTS.id;
+  return out.sort((a, b) => {
+    const x = get(a), y = get(b), c = (typeof x === 'number' && typeof y === 'number') ? x - y : String(x).localeCompare(String(y), undefined, {numeric: true});
+    return c ? c * f.dir : byId(a, b);
+  });
+}
+function renderAssets(){
+  const f = state.reg, A = state.assets, mount = $('#reg-mount'), pager = $('#reg-pager'), meta = $('#reg-meta');
+  $('#reg-head').replaceChildren(head('Assets', 'One row per asset, read from and saved to the Asset Register tab. A target name is a proposal until an actual handle and a verified URL are recorded.',
+    h('button', {class: 'btn primary', type: 'button', onclick: () => openAsset()}, 'Add asset')));
+  const syncSel = (key, values, first, extra) => { const el = $('#reg-' + key); setOptions(el, values, first, extra); el.value = f[key]; if (el.value !== f[key]){ f[key] = ''; el.value = ''; } };
+  syncSel('brand', distinct(A, H.brand), 'All brands');
+  syncSel('category', distinct(A, H.category), 'All categories');
+  syncSel('status', opts(H.status) || [], 'All statuses');
+  syncSel('owner', distinct(A, H.owner), 'All owners', h('option', {value: '__none'}, 'No owner'));
+  pager.replaceChildren(); meta.replaceChildren();
+  if (!state.loaded){ mount.replaceChildren(empty('Loading the register', 'Every asset, its status, owner and evidence gate will be listed here.')); return; }
+  const rows = regRows(), pages = Math.max(1, Math.ceil(rows.length / PAGE));
+  if (f.page >= pages) f.page = pages - 1;
+  const start = f.page * PAGE, slice = rows.slice(start, start + PAGE);
+  const filtered = f.q || f.brand || f.category || f.status || f.owner || f.flag;
+  meta.append(h('span', {class: 'count'}, rows.length === A.length ? plural(A.length, 'asset', 'assets') : rows.length + ' of ' + plural(A.length, 'asset', 'assets')));
+  if (f.flag) meta.append(h('span', {class: 'chip'}, FLAGS[f.flag], h('button', {type: 'button', 'aria-label': 'Remove this filter', onclick: () => { f.flag = ''; renderAssets(); }}, '×')));
+  if (filtered) meta.append(h('button', {class: 'btn quiet sm', type: 'button', onclick: () => { Object.assign(f, {q: '', brand: '', category: '', status: '', owner: '', flag: '', page: 0}); $('#reg-q').value = ''; renderAssets(); }}, 'Clear filters'));
+  if (!rows.length){ mount.replaceChildren(empty(A.length ? 'No assets match these filters' : 'The register is empty', A.length ? 'Clear the filters to see the whole register.' : 'Use Add asset, or add rows in the sheet.')); return; }
+  const hr = h('tr');
+  REG_COLS.forEach(c => hr.append(h('th', {scope: 'col', 'aria-sort': f.sort === c[0] ? (f.dir > 0 ? 'ascending' : 'descending') : null},
+    h('button', {type: 'button', onclick: () => { if (f.sort === c[0]) f.dir = -f.dir; else { f.sort = c[0]; f.dir = 1; } renderAssets(); }}, c[1], h('span', {class: 'arr'}, f.sort === c[0] ? (f.dir > 0 ? '↑' : '↓') : '')))));
+  const tb = h('tbody');
+  slice.forEach(a => {
+    const g = gate(a), isNA = sgi(a) === G_NA, handle = txt(a[H.actual]) || (txt(a[H.target]) ? 'Target: ' + txt(a[H.target]) : '');
+    tb.append(h('tr', {class: 'click', onclick: () => openAsset(a.id)},
+      h('td', {class: 'id'}, h('button', {type: 'button', onclick: e => { e.stopPropagation(); openAsset(a.id); }}, a.id)),
+      h('td', {class: 'nw'}, txt(a[H.brand])),
+      h('td', {class: 'wrap'}, txt(a[H.platform]), h('span', {class: 'sub2'}, [handle, txt(a[H.priority]) ? txt(a[H.priority]) + ' priority' : ''].filter(Boolean).join(' · '))),
+      h('td', null, stPill(a)),
+      h('td', null, txt(a[H.owner]) || h('span', {class: 'sub2'}, 'Unassigned'), txt(a[H.owner]) && txt(a[H.ownerStatus]) ? h('span', {class: 'sub2'}, a[H.ownerStatus]) : null),
+      h('td', {class: 'nw'}, isNA ? h('span', {class: 'num'}, 'n/a') : [h('span', {class: 'num'}, g.pass + '/' + g.total), h('span', {class: 'ticks', 'aria-hidden': 'true'}, g.items.filter(x => !x.na).map(x => h('i', {class: x.pass ? 'on' : ''})))]),
+      h('td', {class: 'num'}, fmtD(a[H.targetDate]))));
+  });
+  mount.replaceChildren(h('div', {class: 'tbl-wrap'}, h('table', {class: 'tbl'}, h('thead', null, hr), tb)));
+  if (pages > 1) pager.append(
+    h('button', {class: 'btn sm', type: 'button', disabled: f.page === 0, onclick: () => { f.page--; renderAssets(); }}, 'Previous'),
+    h('span', {class: 'num'}, (start + 1) + '-' + (start + slice.length) + ' of ' + rows.length),
+    h('button', {class: 'btn sm', type: 'button', disabled: f.page >= pages - 1, onclick: () => { f.page++; renderAssets(); }}, 'Next'));
+}
+function exportCsv(){
+  const cell = v => { v = v == null ? '' : String(v); return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  const hs = state.headers, lines = [hs.map(cell).join(',')];
+  state.assets.forEach(a => lines.push(hs.map(k => cell(a[k])).join(',')));
+  const url = URL.createObjectURL(new Blob(['﻿' + lines.join('\r\n')], {type: 'text/csv'}));
+  const link = h('a', {href: url, download: 'asset-register-' + iso(today) + '.csv'});
+  document.body.append(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* ---------- record lists (plan, records) ---------- */
+function cell(key, r, col){
+  const v = txt(r[col.k]), sub = col.sub && txt(r[col.sub]) ? h('span', {class: 'sub2'}, txt(r[col.sub])) : null, c = LISTS[key].c;
+  if (col.t === 'id') return h('td', {class: 'id'}, h('button', {type: 'button', onclick: e => { e.stopPropagation(); openRecord(c, r.id); }}, r.id));
+  if (col.t === 'date') return h('td', {class: 'num'}, fmtD(v));
+  if (col.t === 'pill') return h('td', null, gPill(v));
+  if (col.t === 'wrap') return h('td', {class: 'wrap'}, v, sub);
+  return h('td', null, v, sub);
+}
+function listRows(key){
+  const L = LISTS[key];
+  let rows = R(L.c).slice().sort(byId);
+  if (L.only) rows = rows.filter(L.only);
+  if (L.byDate) rows.sort((a, b) => txt(a[L.byDate]) < txt(b[L.byDate]) ? -1 : txt(a[L.byDate]) > txt(b[L.byDate]) ? 1 : byId(a, b));
+  if (L.newest) rows.reverse();
+  return rows;
+}
+function listTable(key){
+  const L = LISTS[key], q = txt(state.filt[key]).toLowerCase();
+  let rows = listRows(key);
+  if (q) rows = rows.filter(r => Object.keys(r).some(k => String(r[k]).toLowerCase().indexOf(q) >= 0));
+  if (!rows.length) return empty(q ? 'Nothing matches that filter' : L.emptyT, q ? 'Clear the filter to see every record.' : L.emptyD);
+  const tb = h('tbody');
+  rows.forEach(r => { const tr = h('tr', {class: 'click', onclick: () => openRecord(L.c, r.id)}); L.cols.forEach(col => tr.append(cell(key, r, col))); tb.append(tr); });
+  return h('div', {class: 'tbl-wrap'}, h('table', {class: 'tbl'}, h('thead', null, h('tr', null, L.cols.map(col => h('th', {scope: 'col'}, col.l)))), tb));
+}
+function listTools(key, rerender){
+  const L = LISTS[key], inp = h('input', {type: 'search', placeholder: 'Filter', 'aria-label': 'Filter ' + L.label.toLowerCase(), value: state.filt[key] || '', oninput: e => { state.filt[key] = e.target.value; $('#list-mount').replaceChildren(listTable(key)); }});
+  return h('div', {class: 'row'}, inp, h('button', {class: 'btn primary', type: 'button', onclick: () => openRecord(L.c, null, L.preset, L.prefix)}, L.add));
+}
+function renderPlan(){
+  const root = $('#v-plan'), keys = ['milestones', 'actions', 'decisions', 'risks'];
+  if (keys.indexOf(state.planTab) < 0) state.planTab = 'milestones';
+  root.replaceChildren(head('Plan', 'Milestones, the delivery backlog, and the decisions and risks around them. Dates and owners stay proposed until they are agreed.'));
+  if (!state.loaded){ root.append(empty('Loading the plan', 'Milestones, actions, decisions and risks will be listed here.')); return; }
+  const count = k => k === 'actions' ? listRows(k).filter(r => r.status !== 'Done').length : k === 'decisions' || k === 'risks' ? listRows(k).filter(r => r.status === 'Open').length : listRows(k).length;
+  root.append(h('div', {class: 'row between'}, seg(keys.map(k => [k, LISTS[k].label, count(k)]), state.planTab, v => { state.planTab = v; renderPlan(); }, 'Plan section'), listTools(state.planTab)),
+    h('div', {id: 'list-mount'}, listTable(state.planTab)));
+}
+function renderRecords(){
+  const root = $('#v-records'), keys = ['evidence', 'team', 'changes'];
+  if (keys.indexOf(state.recTab) < 0) state.recTab = 'evidence';
+  root.replaceChildren(head('Records', 'The evidence log, the people involved, and every change made to the register.'));
+  if (!state.loaded){ root.append(empty('Loading records', 'Evidence, team and the change log will be listed here.')); return; }
+  const tabs = seg([['evidence', 'Evidence', R('evidence').length], ['team', 'Team', R('team').length], ['changes', 'Change log', null]], state.recTab, v => { state.recTab = v; renderRecords(); }, 'Records section');
+  if (state.recTab !== 'changes'){ root.append(h('div', {class: 'row between'}, tabs, listTools(state.recTab)), h('div', {id: 'list-mount'}, listTable(state.recTab))); return; }
+  root.append(h('div', {class: 'row between'}, tabs, h('span', {class: 'count'}, state.triggers.edits ? 'Edits made in the sheet and in the dashboard, newest first.' : 'Sheet edits are not being logged. Run setup in the Apps Script editor.')));
+  if (!state.changes.length){ root.append(empty('No changes logged yet', 'Each edit to the register is listed here with its old and new value.')); return; }
+  const tb = h('tbody');
+  state.changes.slice(0, 150).forEach(c => tb.append(h('tr', null, h('td', {class: 'num'}, c.time), h('td', null, c.source),
+    h('td', {class: 'id'}, c.id && state.assets.some(a => a.id === c.id) ? h('button', {type: 'button', onclick: () => openAsset(c.id)}, c.id) : c.id),
+    h('td', null, c.field), h('td', {class: 'wrap'}, c.old), h('td', {class: 'wrap'}, c['new']))));
+  root.append(h('div', {class: 'tbl-wrap'}, h('table', {class: 'tbl'}, h('thead', null, h('tr', null, ['When', 'Where', 'Asset', 'Field', 'From', 'To'].map(x => h('th', {scope: 'col'}, x)))), tb)));
+}
+
+/* ---------- weekly ---------- */
+function updateText(v){
+  const out = ['Brand asset securement: weekly update, as of ' + fmtD(v.date), '', txt(v.summary)];
+  [['Changes this week', v.changes], ['Blockers and renewals', v.blockers], ['Next week', v.nextWeek], ['Milestone forecast', v.forecast], ['Decisions needed', v.decisionsNeeded]].forEach(p => { if (txt(p[1])) out.push('', p[0], txt(p[1])); });
+  return out.join('\n');
+}
+function renderWeekly(){
+  const root = $('#v-weekly');
+  const draftBtn = h('button', {class: 'btn primary', type: 'button', onclick: async e => {
+    const b = e.currentTarget; b.disabled = true; b.textContent = 'Drafting';
+    try { const j = await write('draftWeekly'); await sync(true); toast(j.kept ? 'This week’s update is already marked sent.' : (j.created ? 'Draft created from the current numbers.' : 'Today’s draft was refreshed.')); if (!j.kept) openRecord('updates', j.id); }
+    catch (ex){ toast(ex.message); }
+    b.disabled = false; b.textContent = 'Draft this week’s update';
+  }}, 'Draft this week’s update');
+  root.replaceChildren(head('Weekly', state.triggers.weekly ? 'A draft is written from the tracker every Friday. Nothing is sent: copy the text into your update to the sponsor.' : 'Draft the weekly update from the tracker. The automatic Friday draft is off until setup is run in the Apps Script editor.', draftBtn));
+  if (!state.loaded){ root.append(empty('Loading the weekly summary', 'This week’s numbers and past updates will appear here.')); return; }
+  const st = stats(state.assets), snaps = state.snapshots, tIso = iso(today);
+  let prev = null; for (let i = snaps.length - 1; i >= 0; i--) if (snaps[i].date < tIso){ prev = snaps[i]; break; }
+  const p = prev ? prev.metrics : null, was = name => p && p.by ? (p.by[name] || 0) : null;
+  const dl = (cur, old) => { if (old == null) return h('span', {class: 'd'}, ''); const x = cur - old; return h('span', {class: 'd' + (x > 0 ? ' up' : x < 0 ? ' down' : '')}, x > 0 ? '+' + x : x < 0 ? '−' + Math.abs(x) : 'no change'); };
+  const kv = h('div', {class: 'kv'}), line = (label, cur, old) => kv.append(h('span', null, label), h('span', {class: 'num'}, String(cur)), dl(cur, old));
+  line('Secured and verified', st.verified, p ? p.verified : null);
+  line('Reported, audit pending', st.g[G_WARN], was('Reported secured - audit pending'));
+  line('In progress', st.g[G_INFO], was('In progress'));
+  line('Needs verification', st.g[G_NONE], was(DEFAULT_STATUS));
+  line('Owners named', st.named, p ? p.named : null);
+  line('Evidence links', st.evid, p ? p.evidence : null);
+  const now = card('This week so far', prev ? 'Compared with the snapshot of ' + fmtD(prev.date) + '.' : 'No earlier snapshot yet. The first is recorded when a draft is created, and changes are measured from then on.');
+  now.append(kv);
+  const since = prev ? prev.date : '', sc = state.changes.filter(c => c.field === H.status && c.id && (!since || String(c.time).slice(0, 10) > since));
+  if (sc.length) now.append(h('div', {class: 'tag'}, 'Status changes' + (prev ? ' since ' + fmtD(prev.date) : '')), h('div', {class: 'list'}, sc.slice(0, 6).map(c => h('div', {class: 'li'}, h('i', {class: 'g g-' + (SG[SKEY[c['new']] === undefined ? G_NONE : SKEY[c['new']]].key)}),
+    h('button', {class: 't', type: 'button', onclick: () => openAsset(c.id)}, c.id + ': ' + (c.old || 'blank') + ' to ' + (c['new'] || 'blank')), h('span', {class: 'm'}, c.time + ' · changed in the ' + String(c.source).toLowerCase())))));
+  root.append(h('div', {class: 'cols'}, now, trendCard()));
+  const ups = R('updates').slice().sort((a, b) => txt(a.date) > txt(b.date) ? -1 : txt(a.date) < txt(b.date) ? 1 : -byId(a, b));
+  if (!ups.length){ root.append(empty('No weekly update yet', 'Use the button above to draft the first one from the current numbers.')); return; }
+  ups.forEach(u => {
+    const body = h('div', {class: 'body'}, txt(u.summary));
+    [['Changes this week', u.changes], ['Blockers and renewals', u.blockers], ['Next week', u.nextWeek], ['Milestone forecast', u.forecast], ['Decisions needed', u.decisionsNeeded]].forEach(s => { if (txt(s[1])) body.append(h('b', null, s[0]), txt(s[1])); });
+    root.append(h('article', {class: 'upd'},
+      h('div', {class: 'row between'}, h('div', {class: 'row'}, h('h3', null, 'Week to ' + fmtD(u.date)), gPill(txt(u.sent) || 'Draft')),
+        h('div', {class: 'row'}, h('button', {class: 'btn sm', type: 'button', onclick: () => copyText(updateText(u), 'Update text copied.')}, 'Copy text'), h('button', {class: 'btn sm', type: 'button', onclick: () => openRecord('updates', u.id)}, 'Edit'))),
+      body));
+  });
+}
+function trendCard(){
+  const snaps = state.snapshots.slice(-12), c = card('Verified over time', 'Assets secured and verified at each weekly snapshot.');
+  if (snaps.length < 2){ c.append(h('p', {class: 'sub'}, snaps.length ? 'One snapshot so far. The line appears after the second weekly snapshot.' : 'The line appears after two weekly snapshots.')); return c; }
+  const NS = 'http://www.w3.org/2000/svg', W = 400, HT = 180, L = 30, Rt = 14, T = 18, B = 28;
+  const vals = snaps.map(s => (s.metrics && s.metrics.verified) || 0), top = Math.max(4, Math.ceil(Math.max(...vals) * 1.2 / 4) * 4);
+  const x = i => L + (W - L - Rt) * (snaps.length === 1 ? 0.5 : i / (snaps.length - 1)), y = v => T + (HT - T - B) * (1 - v / top);
+  const el = (tag, at, text) => { const n = document.createElementNS(NS, tag); for (const k in at) n.setAttribute(k, at[k]); if (text != null) n.textContent = text; return n; };
+  const svg = el('svg', {class: 'trend', viewBox: '0 0 ' + W + ' ' + HT, role: 'img', 'aria-label': 'Verified assets by week: ' + snaps.map((s, i) => fmtD(s.date) + ' ' + vals[i]).join(', ')});
+  [0, top / 2, top].forEach(v => { svg.append(el('line', {class: 'grid', x1: L, x2: W - Rt, y1: y(v), y2: y(v)}), el('text', {x: L - 8, y: y(v) + 4, 'text-anchor': 'end'}, String(v))); });
+  const pts = vals.map((v, i) => x(i) + ',' + y(v)).join(' ');
+  svg.append(el('polygon', {class: 'ar', points: L + ',' + y(0) + ' ' + pts + ' ' + x(vals.length - 1) + ',' + y(0)}), el('polyline', {class: 'ln', points: pts}));
+  const every = Math.ceil(snaps.length / 4);
+  snaps.forEach((s, i) => {
+    if (i % every === 0 || i === snaps.length - 1) svg.append(el('text', {x: x(i), y: HT - 8, 'text-anchor': i === 0 ? 'start' : i === snaps.length - 1 ? 'end' : 'middle'}, fmtD(s.date).replace(/ \d{4}$/, '')));
+    svg.append(el('circle', {class: 'pt', cx: x(i), cy: y(vals[i]), r: i === snaps.length - 1 ? 5 : 4}));
+    svg.append(el('circle', {class: 'hit', cx: x(i), cy: y(vals[i]), r: 14, tabindex: 0, 'data-tip': fmtD(s.date) + ': ' + vals[i] + ' verified'}));
+  });
+  svg.append(el('text', {x: x(vals.length - 1) - 10, y: y(vals[vals.length - 1]) - 10, 'text-anchor': 'end'}, String(vals[vals.length - 1])));
+  c.append(svg);
+  return c;
+}
+
+/* ---------- drawers ---------- */
+function mountDrawer(tag, title, body, foot, wide){
+  if (drawer) closeDrawer();
+  drawer = {last: document.activeElement};
+  const panel = h('aside', {class: 'drawer', id: 'drawer', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'drawer-title'},
+    h('header', null, h('div', null, h('span', {class: 'tag'}, tag), h('h2', {id: 'drawer-title'}, title)), h('button', {class: 'btn quiet sm', type: 'button', onclick: closeDrawer}, 'Close')), body, foot);
+  document.body.append(h('div', {class: 'scrim', id: 'scrim', onclick: closeDrawer}), panel);
+  const first = body.querySelector('input:not([disabled]),select:not([disabled]),textarea:not([disabled])');
+  (first || panel.querySelector('button')).focus();
+}
+function closeDrawer(){
+  const d = drawer; drawer = null;
+  const p = $('#drawer'), s = $('#scrim'); if (p) p.remove(); if (s) s.remove();
+  if (d && d.last && document.contains(d.last)){ try { d.last.focus(); } catch (e){} }
+}
+function showErr(list){
+  const box = $('#form-err'); if (!box) return;
+  box.replaceChildren(list.length === 1 ? list[0] : h('ul', null, list.map(x => h('li', null, x))));
+  box.hidden = false; box.scrollIntoView({block: 'nearest'});
+}
+const SECRET = /\b(pass(word|code|phrase)?|pwd|recovery\s*codes?|backup\s*codes?|secret(\s*key)?|api\s*key|token|otp)\s*[:=]\s*\S/i;
+function control(id, type, val, options, sug){
+  let ctl, dl = null; val = txt(val);
+  if (type === 'select'){
+    const list = [''].concat(options.filter(Boolean)); if (val && list.indexOf(val) < 0) list.push(val);
+    ctl = h('select', {id}, list.map(o => h('option', {value: o}, o || 'Not set')));
+  } else if (type === 'area') ctl = h('textarea', {id, rows: 3});
+  else {
+    ctl = h('input', {id, type: (type === 'date' && (!val || parseD(val))) ? 'date' : 'text', autocomplete: 'off'});
+    if (sug && sug.length){ ctl.setAttribute('list', id + '-dl'); dl = h('datalist', {id: id + '-dl'}, sug.map(v => h('option', {value: v}))); }
+  }
+  ctl.value = (type === 'date' && parseD(val)) ? val.slice(0, 10) : val;
+  return [ctl, dl];
+}
+function footer(isNew, noun, onRemove){
+  const foot = h('footer');
+  const paint = confirming => {
+    foot.replaceChildren();
+    if (confirming){
+      const yes = h('button', {class: 'btn danger', type: 'button', onclick: onRemove}, 'Yes, remove');
+      foot.append(h('span', null, 'Remove this ' + noun + '? It is kept in the Removed tab of the project log.'), h('span', {class: 'sp'}), yes, h('button', {class: 'btn', type: 'button', onclick: () => paint(false)}, 'Keep'));
+      yes.focus(); return;
+    }
+    foot.append(h('button', {class: 'btn primary', type: 'submit', form: 'rec-form', id: 'btn-save'}, isNew ? 'Add ' + noun : 'Save to the sheet'), h('button', {class: 'btn', type: 'button', onclick: closeDrawer}, 'Cancel'), h('span', {class: 'sp'}));
+    if (!isNew) foot.append(h('button', {class: 'btn danger', type: 'button', onclick: () => paint(true)}, 'Remove'));
+  };
+  paint(false);
+  return foot;
+}
+async function commit(run, okMsg){
+  const btn = $('#btn-save'), label = btn ? btn.textContent : '';
+  if (btn){ btn.disabled = true; btn.textContent = 'Saving'; }
+  try { await run(); closeDrawer(); toast(okMsg); sync(true); }
+  catch (e){
+    let msg = e.message || 'That change could not be saved.';
+    if (e.code === 'conflict') msg = 'Someone changed ' + (e.fields || []).join(', ') + ' in the sheet while you were editing. Close this panel and open the asset again to see the latest values.';
+    else if ((e.code === 'rejected' || e.code === 'invalid_value') && e.fields) msg += ' Check: ' + e.fields.join(', ') + '.';
+    showErr([msg]);
+    if (btn){ btn.disabled = false; btn.textContent = label; }
+  }
+}
+
+function openAsset(id){
+  const isNew = !id, src = isNew ? null : state.assets.find(x => x.id === id);
+  if (!isNew && !src) return;
+  const a = src || {};
+  if (isNew){
+    [[H.status, DEFAULT_STATUS], [H.priority, 'Medium'], [H.access, 'Unknown'], [H.recovery, 'Unknown'], [H.twoFA, 'Unknown'], [H.autoRenew, 'Unknown']].forEach(d => { const o = opts(d[0]); a[d[0]] = o && o.indexOf(d[1]) >= 0 ? d[1] : ''; });
+    if (state.reg.brand) a[H.brand] = state.reg.brand;
+  }
+  const hs = state.headers, fid = hd => 'f-' + hs.indexOf(hd), known = {};
+  const form = h('form', {class: 'body', id: 'rec-form', novalidate: true});
+  form.append(h('div', {class: 'err', id: 'form-err', role: 'alert', hidden: true}), h('div', {class: 'gatebox', id: 'gatebox'}));
+  const field = hd => {
+    const o = opts(hd), type = o ? 'select' : state.dateCols.indexOf(hd) >= 0 ? 'date' : LONG.indexOf(hd) >= 0 ? 'area' : 'text';
+    const sug = SUGGEST.indexOf(hd) >= 0 ? distinct(state.assets, hd).concat(/Owner|Admin/.test(hd) ? R('team').map(t => txt(t.name)).filter(Boolean) : []).filter((v, i, arr) => arr.indexOf(v) === i).slice(0, 200) : null;
+    const pair = control(fid(hd), type, a[hd], o, sug);
+    return h('div', {class: 'fld' + (type === 'area' || hd === H.url ? ' w' : '')}, h('label', {for: fid(hd)}, hd), pair, HINTS[hd] ? h('div', {class: 'hint'}, HINTS[hd]) : null);
+  };
+  if (isNew) form.append(h('div', {class: 'fld w'}, h('label', {for: 'f-id'}, H.id), h('input', {id: 'f-id', type: 'text', autocomplete: 'off', placeholder: 'Leave blank to use the next ID'})));
+  let firstGroup = !isNew;
+  FORM_GROUPS.forEach(grp => {
+    grp[1].forEach(x => { known[x] = 1; });
+    const present = grp[1].filter(hasCol);
+    if (!present.length) return;
+    form.append(h('h3', {class: firstGroup ? 'first' : ''}, grp[0])); firstGroup = false;
+    present.forEach(x => form.append(field(x)));
+  });
+  const other = hs.filter(x => x !== H.id && !known[x]);
+  if (other.length){ form.append(h('h3', null, 'Other columns')); other.forEach(x => form.append(field(x))); }
+  const read = () => { const v = {}; hs.forEach(hd => { if (hd === H.id) return; const el = document.getElementById(fid(hd)); if (el) v[hd] = el.value.trim(); }); return v; };
+  const paintGate = () => {
+    const g = gate(read());
+    $('#gatebox').replaceChildren(
+      h('div', {class: 'gh'}, h('span', null, 'Evidence gate'), h('span', {class: 'num'}, g.pass + ' of ' + g.total + ' checks pass')), meter(g.pass / g.total),
+      h('ul', null, g.items.map(x => h('li', {class: x.pass ? 'ok' : ''}, h('span', {class: 'mk'}, x.na ? 'N/A' : (x.pass ? 'PASS' : 'OPEN')), x.label))),
+      h('div', {class: 'hint'}, VERIFIED + ' can only be saved from here once every check passes.'));
+  };
+  form.addEventListener('input', paintGate); form.addEventListener('change', paintGate);
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const v = read(), errs = [];
+    [H.brand, H.platform].forEach(hd => { if (hasCol(hd) && !v[hd]) errs.push(hd + ' is required.'); });
+    Object.keys(v).forEach(hd => {
+      if (SECRET.test(v[hd])) errs.push(hd + ' looks like it contains a credential. Keep it in the vault and record only the vault reference.');
+      if (v[hd].charAt(0) === '=') errs.push(hd + ' cannot start with an equals sign.');
+    });
+    if (v[H.status] === VERIFIED){
+      const open = gate(v).items.filter(x => !x.pass);
+      if (open.length) errs.push('Not ready for ' + VERIFIED + '. Still open: ' + open.map(x => x.label).join(', ') + '.');
+    }
+    if (errs.length){ showErr(errs); return; }
+    if (isNew){
+      const values = Object.assign({}, v); values[H.id] = txt($('#f-id').value);
+      commit(async () => { const j = await write('addAsset', {values}); id = j.id; }, 'Asset added to the sheet.');
+      return;
+    }
+    const changes = {};
+    Object.keys(v).forEach(hd => { if (v[hd] !== txt(a[hd])) changes[hd] = {old: txt(a[hd]), 'new': v[hd]}; });
+    if (!Object.keys(changes).length){ closeDrawer(); return; }
+    commit(() => write('saveAsset', {id, changes}), 'Saved ' + id + ' to the sheet.');
+  });
+  mountDrawer(isNew ? 'New asset' : id, isNew ? 'Add an asset' : (txt(a[H.platform]) || 'Asset') + (txt(a[H.brand]) ? ' · ' + a[H.brand] : ''), form,
+    footer(isNew, 'asset', () => commit(() => write('deleteAsset', {id}), 'Removed ' + id + ' from the sheet.')));
+  paintGate();
+}
+
+function openRecord(c, id, preset, prefix){
+  const s = S[c], isNew = !id, rec = isNew ? Object.assign({}, preset || {}) : R(c).find(x => x.id === id);
+  if (!rec) return;
+  if (isNew) s.fields.forEach(f => { if (rec[f.k] == null) rec[f.k] = f.d || ''; });
+  const form = h('form', {class: 'body', id: 'rec-form', novalidate: true});
+  form.append(h('div', {class: 'err', id: 'form-err', role: 'alert', hidden: true}));
+  s.fields.forEach(f => {
+    let sug = null;
+    if (f.t === 'combo'){ const m = {}; (f.sug || []).forEach(v => { m[v] = 1; }); R(c).forEach(r => { if (txt(r[f.k])) m[txt(r[f.k])] = 1; }); if (/owner/i.test(f.k)) R('team').forEach(t => { if (txt(t.name)) m[t.name] = 1; }); sug = Object.keys(m).sort(); }
+    const pair = control('r-' + f.k, f.t === 'combo' ? 'text' : f.t, rec[f.k], f.o, sug);
+    if (f.rows) pair[0].rows = f.rows;
+    form.append(h('div', {class: 'fld' + (f.w || f.t === 'area' ? ' w' : '')}, h('label', {for: 'r-' + f.k}, f.l + (f.req ? ' *' : '')), pair, f.hint ? h('div', {class: 'hint'}, f.hint) : null));
+  });
+  const read = () => { const v = {}; s.fields.forEach(f => { v[f.k] = document.getElementById('r-' + f.k).value.trim(); }); return v; };
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const v = read(), errs = [];
+    s.fields.forEach(f => {
+      if (f.req && !v[f.k]) errs.push(f.l + ' is required.');
+      if (SECRET.test(v[f.k])) errs.push(f.l + ' looks like it contains a credential. Keep it in the vault and record only the vault reference.');
+    });
+    if (errs.length){ showErr(errs); return; }
+    commit(() => write('saveRecord', {collection: c, id: id || '', create: isNew, prefix: prefix || (c === 'decisions' && v.kind === 'Risk' ? 'R' : s.prefix), values: v}), isNew ? 'Added to the project log.' : 'Saved ' + id + '.');
+  });
+  const foot = footer(isNew, s.one, () => commit(() => write('deleteRecord', {collection: c, id}), 'Removed ' + id + '.'));
+  if (c === 'updates') foot.insertBefore(h('button', {class: 'btn', type: 'button', onclick: () => copyText(updateText(read()), 'Update text copied.')}, 'Copy text'), foot.querySelector('.sp'));
+  mountDrawer(isNew ? 'New ' + s.one : id, isNew ? 'Add ' + (/^[aeiou]/.test(s.one) ? 'an ' : 'a ') + s.one : (txt(s.title(rec)) || id), form, foot);
+}
+
+function openSettings(){
+  const body = h('div', {class: 'body'});
+  const block = (title, ...kids) => { body.append(h('h3', {class: body.children.length ? '' : 'first'}, title), h('div', {class: 'setting'}, kids)); };
+  const onoff = (label, on) => h('div', {class: 'onoff'}, h('span', null, label), pill(on ? 'On' : 'Off', on ? 'good' : 'none'));
+  block('Where the data lives',
+    h('p', null, 'The Asset Register tab of the tracker is the single source. Edits made here are written to it at once, and edits made in the sheet appear here within a minute.'),
+    h('div', {class: 'row'},
+      state.urls.tracker ? h('a', {class: 'btn sm', href: state.urls.tracker, target: '_blank', rel: 'noopener'}, 'Open the tracker') : null,
+      /^https:\/\/docs\.google\.com\//.test(state.urls.log || '') ? h('a', {class: 'btn sm', href: state.urls.log, target: '_blank', rel: 'noopener'}, 'Open the project log') : null,
+      h('button', {class: 'btn sm', type: 'button', onclick: () => { sync(true); toast('Refreshing from the sheet.'); }}, 'Refresh now')));
+  block('Automation',
+    onoff('Friday draft of the weekly update', state.triggers.weekly),
+    onoff('Log of edits made in the sheet', state.triggers.edits),
+    onoff('Owner Status column in the sheet', hasCol(H.ownerStatus)),
+    (!state.triggers.weekly || !state.triggers.edits) ? h('p', null, 'Run the setup function in the Apps Script editor to switch on what is missing.') : null,
+    !hasCol(H.ownerStatus) ? h('p', null, 'Without an Owner Status column the dashboard can show who is named, not who has accepted. Add a column with that name to the sheet, or run addOwnerStatusColumn in the script editor.') : null);
+  const file = h('input', {type: 'file', id: 'imp-file', accept: '.json,application/json'}), out = h('p', {id: 'imp-out'}, '');
+  block('Import starter records',
+    h('p', null, 'Load milestones, actions, evidence, decisions and team from a JSON file. Records whose ID already exists are skipped.'),
+    h('div', {class: 'row'}, file, h('button', {class: 'btn sm', type: 'button', onclick: async e => {
+      const f = file.files && file.files[0]; if (!f){ out.textContent = 'Choose a JSON file first.'; return; }
+      const b = e.currentTarget; b.disabled = true; out.textContent = 'Importing.';
+      try {
+        const data = JSON.parse(await f.text()), j = await write('import', {data});
+        const n = Object.keys(j.added || {}).reduce((s, k) => s + j.added[k], 0), sk = Object.keys(j.skipped || {}).reduce((s, k) => s + j.skipped[k], 0);
+        out.textContent = 'Added ' + plural(n, 'record', 'records') + ', skipped ' + sk + ' already present.'; sync(true);
+      } catch (ex){ out.textContent = ex.message || 'That file could not be read as JSON.'; }
+      b.disabled = false;
+    }}, 'Import')), out);
+  block('This browser',
+    h('p', null, 'Connected to ', h('code', null, cfg.api || '')),
+    h('div', {class: 'row'},
+      LOCKED_API ? null : h('button', {class: 'btn sm', type: 'button', onclick: () => copyText(location.origin + location.pathname + '#api=' + encodeURIComponent(cfg.api), 'Invite link copied. Share the access key separately.')}, 'Copy invite link'),
+      h('button', {class: 'btn sm danger', type: 'button', onclick: () => { cfg.key = ''; saveCfg(); closeDrawer(); state.loaded = false; showConnect('You disconnected this browser. Enter the access key to reconnect.'); }}, 'Disconnect')));
+  mountDrawer('Settings', 'Connection and automation', body, h('footer', null, h('span', {class: 'sp'}), h('button', {class: 'btn', type: 'button', onclick: closeDrawer}, 'Close')));
+}
+
+/* ---------- events and boot ---------- */
+document.addEventListener('mouseover', e => { const t = e.target.closest ? e.target.closest('[data-tip]') : null; if (t) showTip(t); else hideTip(); });
+document.addEventListener('focusin', e => { const t = e.target.closest ? e.target.closest('[data-tip]') : null; if (t) showTip(t); });
+document.addEventListener('focusout', hideTip);
+document.addEventListener('scroll', hideTip, true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawer) closeDrawer(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !drawer) sync(); });
+window.addEventListener('hashchange', () => { const v = (location.hash || '').slice(1); if (connected() && VIEWS[v] && v !== state.view) go(v); });
+const oops = msg => { document.documentElement.setAttribute('data-error', msg); const b = $('#banner'); if (b){ b.hidden = false; b.textContent = 'Something went wrong on this page. Reload it, and if it happens again tell the project lead: ' + msg; } };
+window.addEventListener('error', e => oops(e.message || 'unknown error'));
+window.addEventListener('unhandledrejection', e => oops(String((e.reason && e.reason.message) || e.reason || 'unknown error')));
+setInterval(() => { if (!document.hidden && !state.busy) sync(); }, 45000);
+
+buildShell();
+if (connected()){ go(VIEWS[startView] ? startView : 'overview'); sync(true); }
+else showConnect('');
+})();
+</script>
+</body>
+</html>
